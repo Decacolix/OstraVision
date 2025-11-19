@@ -1,22 +1,22 @@
 # OstraVision
 
-Dynamic map with current projects for the city of Ostrava.
+Dynamic map and information about the current architecture projects in the city of [Ostrava](https://ostrava.cz/).
 
 ## Technologies used
 
 ### Front-End:
 
-- TypeScript
-- React
-- Tailwind
+- [TypeScript](https://www.typescriptlang.org/)
+- [React](https://react.dev/)
+- [Tailwind](https://tailwindcss.com/)
 
 ### Back-End:
 
-- Node.js
-- Express
-- PostgreSQL
+- [Node.js](https://nodejs.org/)
+- [Express](https://expressjs.com/)
+- [PostgreSQL](https://www.postgresql.org/)
 
 ## Authors
 
-- David Toman
-- Filip Polzer
+- David Toman – [LinkedIn](https://www.linkedin.com/in/dtoman1997/) | [E-mail](mailto:davidtoman1997@gmail.com)
+- Filip Polzer – [LinkedIn](https://www.linkedin.com/in/filippolzer1998/) | [E-mail](mailto:filip.polzer98@gmail.com)
