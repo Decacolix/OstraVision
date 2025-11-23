@@ -9,6 +9,7 @@ Dynamic map and information about the current architecture projects in the city 
 - [TypeScript](https://www.typescriptlang.org/)
 - [React](https://react.dev/)
 - [Tailwind](https://tailwindcss.com/)
+- [Leaflet](https://leafletjs.com/)
 
 ### Back-End:
 
