@@ -10,6 +10,7 @@ Dynamic map and information about the current architecture projects in the city 
 - [React](https://react.dev/)
 - [Tailwind](https://tailwindcss.com/)
 - [Leaflet](https://leafletjs.com/)
+- [Affinity](https://www.affinity.studio/)
 
 ### Back-End:
 
