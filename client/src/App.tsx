@@ -25,7 +25,7 @@ const App = () => {
 	return (
 		<div className="min-h-screen flex font-montserrat">
 			<div className="basis-5/5 2xl:basis-3/5 flex flex-col">
-				<header className="fixed flex justify-between z-2000 w-full">
+				<header className="fixed flex justify-between z-2000 w-full 2xl:w-auto">
 					<div className="pt-3 px-4 z-10">
 						<NavLink to="/" end>
 							<img
