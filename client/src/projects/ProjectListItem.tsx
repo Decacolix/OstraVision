@@ -49,15 +49,15 @@ const setType = (type: number): string => {
 const formatDaysAgo = (isoDate: unknown): string => {
 	if (typeof isoDate !== 'string') return '-';
 
-	const localDate = new Date(isoDate).toLocaleString('en-US', {
+	const localDate: string = new Date(isoDate).toLocaleString('en-US', {
 		timeZone: 'Europe/Prague',
 	});
-	const date = new Date(localDate);
+	const date: Date = new Date(localDate);
 
 	if (Number.isNaN(date.getTime())) return '-';
 
-	const differenceMs = Date.now() - date.getTime();
-	const days = Math.floor(differenceMs / (1000 * 60 * 60 * 24));
+	const differenceMs: number = Date.now() - date.getTime();
+	const days: number = Math.floor(differenceMs / (1000 * 60 * 60 * 24));
 
 	if (days <= 0) return 'dnes';
 	if (days === 1) return 'před 1 dnem';
@@ -77,8 +77,6 @@ const ProjectListItem = ({
 		? truncateText(structure.description, 120)
 		: '(popisek není k dispozici)';
 	const type: string = structure.type ? setType(structure.type) : '';
-
-	console.log(formatDaysAgo(lastUpdatedLabel));
 
 	return (
 		<button type="button" onClick={onClick} className="min-w-full">
