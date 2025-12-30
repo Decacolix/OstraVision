@@ -1,7 +1,7 @@
 /* About page component. */
 const AboutPage = () => {
 	return (
-		<div className="flex flex-col sm:flex-row justify-center items-center gap-6">
+		<div className="flex flex-col sm:flex-row justify-center items-center sm:items-start gap-6">
 			<div className="max-w-[50%] flex flex-col items-center">
 				<img
 					className="rounded-full"
@@ -34,14 +34,14 @@ const AboutPage = () => {
 						</a>
 					</span>
 				</div>
-				<p>
+				<div>
 					<span className="text-2xl font-bold">„</span>
 					<p className="italic">
 						Tento projekt jsem chtěl vytvořit, abych umožnil lidem nejen z
 						Ostravy a okolí získat přehledně informace o nových projektech.
 					</p>
 					<span className="text-2xl font-bold">“</span>
-				</p>
+				</div>
 			</div>
 			<div className="max-w-[50%] flex flex-col items-center ">
 				<img
@@ -72,14 +72,14 @@ const AboutPage = () => {
 						</a>
 					</span>
 				</div>
-				<p>
+				<div>
 					<span className="text-2xl font-bold">„</span>
 					<p className="italic">
 						Jsem rád, že se mohu podílet na tomto perspektivním projektu, který
 						lidem přiblíží zajímavosti z Ostravska.
 					</p>
 					<span className="text-2xl font-bold">“</span>
-				</p>
+				</div>
 			</div>
 		</div>
 	);
