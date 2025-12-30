@@ -1,11 +1,19 @@
-type Structure = {
+import { truncateText, formatDaysAgo } from '../utils';
+import { formatDate } from '../utils/formatDate';
+import { formatPrice } from '../utils/formatPrice';
+
+/* Exported type representing one project record from the API. */
+export type Structure = {
 	structure_id: string;
 	name?: string;
 	description?: string;
 	type?: number;
+	budget?: number;
+	updated_at?: string;
 	[key: string]: unknown;
 };
 
+/* Component props: structure (the project record from the database), photoUrl (cover image), lastUpdatedLabel (ISO date string), onClick (click handler for opening the project detail). */
 type Props = {
 	structure: Structure;
 	photoUrl?: string | null;
@@ -13,12 +21,7 @@ type Props = {
 	onClick?: () => void;
 };
 
-const truncateText = (text: string, maxLength: number): string => {
-	return text.length > maxLength
-		? `${text.substring(0, maxLength)}...`
-		: text.substring(0, maxLength);
-};
-
+/* Convert the numeric type value into category label. */
 const setType = (type: number): string => {
 	switch (type) {
 		case 0:
@@ -46,49 +49,42 @@ const setType = (type: number): string => {
 	}
 };
 
-const formatDaysAgo = (isoDate: unknown): string => {
-	if (typeof isoDate !== 'string') return '-';
-
-	const localDate: string = new Date(isoDate).toLocaleString('en-US', {
-		timeZone: 'Europe/Prague',
-	});
-	const date: Date = new Date(localDate);
-
-	if (Number.isNaN(date.getTime())) return '-';
-
-	const differenceMs: number = Date.now() - date.getTime();
-	const days: number = Math.floor(differenceMs / (1000 * 60 * 60 * 24));
-
-	if (days <= 0) return 'dnes';
-	if (days === 1) return 'před 1 dnem';
-	return `před ${days} dny`;
-};
-
+/* Project list item component: renders a single structure item in the list. */
 const ProjectListItem = ({
 	structure,
 	photoUrl,
 	lastUpdatedLabel,
 	onClick,
 }: Props) => {
+	/* Project title, truncated for UI consistency. */
 	const name: string = structure.name
 		? truncateText(structure.name, 50)
-		: '(jméno není k dispozici)';
+		: '(název není k dispozici)';
+
+	/* Project description, truncated for UI consistency. */
 	const shortDescription: string = structure.description
 		? truncateText(structure.description, 120)
 		: '(popisek není k dispozici)';
+
+	/* Category label, shows empty string for missing value. */
 	const type: string = structure.type ? setType(structure.type) : '';
 
+	const budget: string = structure.budget
+		? `${formatPrice(structure.budget)} Kč`
+		: '';
+
 	return (
-		<button type="button" onClick={onClick} className="min-w-full">
-			<div className="h-35 text-white">
+		<button type="button" className="min-w-full">
+			<div className="h-35 text-white my-5">
 				<div
-					className="overflow-hidden flex bg-gray-100 h-30 justify-end rounded-lg cursor-pointer hover:underline"
+					className="overflow-hidden flex bg-gray-400 h-30 justify-end rounded-lg cursor-pointer hover:underline"
 					style={{
 						backgroundImage: `url(${photoUrl})`,
 						backgroundRepeat: 'no-repeat',
 						backgroundSize: 'cover',
 						backgroundPosition: 'center',
 					}}
+					onClick={onClick}
 				>
 					<div className="px-3 text-left w-full sm:w-[80%] bg-gray-700/50  flex flex-col justify-center items-start">
 						<h2 className="font-semibold text-md sm:text-lg">{name}</h2>
@@ -96,14 +92,32 @@ const ProjectListItem = ({
 					</div>
 				</div>
 				<div className="pt-2 text-xs sm:text-sm flex flex-col sm:flex-row justify-between">
-					{type ? (
-						<div className="bg-gray-700 px-2 rounded-md  text-center sm:text-left mb-1 sm:mb-0">
-							{type}
-						</div>
-					) : (
-						<div></div>
-					)}
-					<div className="text-center sm:text-right text-gray-500">
+					<div className="flex justify-center sm:justify-start">
+						{
+							/* Only render the category label if the type exists. Otherwise render an empty div to preserve spacing. */
+							type ? (
+								<div className="bg-gray-700 px-2 rounded-md  text-center sm:text-left mb-1 sm:mb-0 mr-2">
+									{type}
+								</div>
+							) : (
+								<div></div>
+							)
+						}
+						{
+							/* Only render the price label if the type exists. Otherwise render an empty div to preserve spacing. */
+							budget ? (
+								<div className="bg-olb px-2 rounded-md  text-center sm:text-left mb-1 sm:mb-0">
+									{budget}
+								</div>
+							) : (
+								<div></div>
+							)
+						}
+					</div>
+					<div
+						className="text-center sm:text-right text-gray-500"
+						title={formatDate(lastUpdatedLabel) || ''}
+					>
 						Poslední aktualizace {formatDaysAgo(lastUpdatedLabel)}
 					</div>
 				</div>

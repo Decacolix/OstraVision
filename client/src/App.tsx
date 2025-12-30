@@ -6,6 +6,7 @@ import HomePage from './pages/HomePage';
 import ProjectsPage from './pages/ProjectsPage';
 import CultureGastroPage from './pages/CultureGastroPage';
 import AboutPage from './pages/AboutPage';
+import NotFound from './layout/NotFound';
 
 const NAV_LINK_BASE =
 	'navlink cursor-pointer wrap text-center text-sm sm:text-base mt-12 px-2 md:px-4 lg:mt-0';
@@ -109,7 +110,7 @@ const App = () => {
 						<Route path="/projekty" element={<ProjectsPage />} />
 						<Route path="/kultura-gastro" element={<CultureGastroPage />} />
 						<Route path="/o-nas" element={<AboutPage />} />
-						<Route path="*" element={<HomePage />} />
+						<Route path="*" element={<NotFound />} />
 					</Routes>
 				</main>
 			</div>

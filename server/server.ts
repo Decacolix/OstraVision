@@ -292,7 +292,7 @@ function buildOrderBy(tableName: string, query: Request['query']): string {
 			}
 
 			/* Return a valid ORDER BY clause. */
-			return ` ORDER BY ${orderBy} ${dir}${nullsSql}`;
+			return ` ORDER BY ${orderBy} ${dir}${nullsSql}, ${tablePrimaryKeys[tableName]} ${dir}`;
 		}
 	}
 
