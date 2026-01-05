@@ -89,7 +89,10 @@ const tableColumns: Record<string, Set<string>> = {};
 /* Root endpoint for the API. Shows available endpoints, supported query parameters and list response shape. */
 app.get('/api/data', (req: Request, res: Response) => {
 	/* Build endpoints in a structured way so it is easy for clients to discover routes. */
-	const endpoints = tables.map(t => ({
+	const endpoints: {
+		list: string;
+		one: string;
+	}[] = tables.map(t => ({
 		/* List route. */
 		list: `/api/data/${t}`,
 
@@ -137,7 +140,7 @@ app.get('/api/data', (req: Request, res: Response) => {
 /* Meta endpoints return metadata. */
 app.get('/api/data/meta', (req: Request, res: Response) => {
 	/* Build meta route for each table. */
-	const metaEndpoints = tables.map(t => `/api/data/${t}/meta`);
+	const metaEndpoints: string[] = tables.map(t => `/api/data/${t}/meta`);
 
 	/* Return schema and all meta endpoints. */
 	res.json({ schema, metaEndpoints });
@@ -177,7 +180,10 @@ function getTableMeta(tableName: string) {
 	const filters: string[] = tableAllowedFilters[tableName] ?? [];
 
 	/* Default ordering for this table, if configured. */
-	const def = defaultOrderBy[tableName] ?? null;
+	const def: {
+		column: string;
+		dir: 'ASC' | 'DESC';
+	} = defaultOrderBy[tableName] ?? null;
 
 	/* Return a structured meta object. */
 	return {
@@ -228,7 +234,7 @@ function buildWhereFromQuery(
 	query: Request['query']
 ): { whereSql: string; params: unknown[] } {
 	/* Allowed filter keys for this table. If none, use an empty list. */
-	const allowed = tableAllowedFilters[tableName] ?? [];
+	const allowed: string[] = tableAllowedFilters[tableName] ?? [];
 
 	/* Conditions hold pieces like "author_id = $1". */
 	const conditions: string[] = [];
@@ -239,7 +245,7 @@ function buildWhereFromQuery(
 	/* Parameters hold actual values passed to the database driver. */
 	for (const key of allowed) {
 		/* Raw query parameter value. */
-		const raw = query[key];
+		const raw: string | unknown = query[key];
 
 		/* Only accept a single string value, ignore array and objects. */
 		if (typeof raw === 'string' && raw.trim().length > 0) {
@@ -266,14 +272,14 @@ function buildOrderBy(tableName: string, query: Request['query']): string {
 	const cols: Set<string> = tableColumns[tableName];
 
 	/* Read ordering query parameters. */
-	const rawOrderBy = query.order_by;
-	const rawOrderDir = query.order_dir;
-	const rawNulls = query.nulls;
+	const rawOrderBy: string | unknown = query.order_by;
+	const rawOrderDir: string | unknown = query.order_dir;
+	const rawNulls: string | unknown = query.nulls;
 
 	/* If the user requested ordering by a specific column- */
 	if (typeof rawOrderBy === 'string' && rawOrderBy.trim().length > 0) {
 		/* Clean the column name candidate. */
-		const orderBy = rawOrderBy.trim();
+		const orderBy: string = rawOrderBy.trim();
 
 		/* Validate the requsted column against the known columns. */
 		if (cols && cols.has(orderBy)) {
@@ -286,7 +292,7 @@ function buildOrderBy(tableName: string, query: Request['query']): string {
 			/* Optional NULLS placement. If invalid or missing, we omit it. */
 			let nullsSql: string = '';
 			if (typeof rawNulls === 'string') {
-				const v = rawNulls.toLowerCase();
+				const v: string = rawNulls.toLowerCase();
 				if (v === 'last') nullsSql = ' NULLS LAST';
 				else if (v === 'first') nullsSql = ' NULLS FIRST';
 			}
@@ -297,7 +303,10 @@ function buildOrderBy(tableName: string, query: Request['query']): string {
 	}
 
 	/* If order_by is invalid, we execute apply default ordering if configured for this table. */
-	const def = defaultOrderBy[tableName];
+	const def: {
+		column: string;
+		dir: 'DESC' | 'ASC';
+	} = defaultOrderBy[tableName];
 	if (def) {
 		/* Extra safety to ensure the default column exists in this table. */
 		if (!cols || cols.has(def.column)) {
@@ -319,12 +328,12 @@ function parseLimitOffset(query: Request['query']): {
 	let offset: number | undefined;
 
 	/* Raw query values. */
-	const rawLimit = query.limit;
-	const rawOffset = query.offset;
+	const rawLimit: string | unknown = query.limit;
+	const rawOffset: string | unknown = query.offset;
 
 	/* Parse limit if provided.*/
 	if (typeof rawLimit === 'string') {
-		const parsed = parseInt(rawLimit, 10);
+		const parsed: number = parseInt(rawLimit, 10);
 
 		/* Only accept numeric values. */
 		if (!Number.isNaN(parsed)) {
@@ -335,7 +344,7 @@ function parseLimitOffset(query: Request['query']): {
 
 	/* Parse offset if provided. */
 	if (typeof rawOffset === 'string') {
-		const parsed = parseInt(rawOffset, 10);
+		const parsed: number = parseInt(rawOffset, 10);
 
 		/* Only accept numeric values. */
 		if (!Number.isNaN(parsed)) {
@@ -416,19 +425,19 @@ const setTableEndpoint = (tableName: string): void => {
 				const countSql: string = `SELECT COUNT(*)::int AS total FROM ${schema}.${tableName}${whereSql}`;
 
 				/* Execute count query with filter parameters. */
-				const countResult = await pool.query<{ total: number }>(
+				const countResult: any = await pool.query<{ total: number }>(
 					countSql,
 					whereParams
 				);
 
 				/* If no row is returned, set default to 0. */
-				const total = countResult.rows[0]?.total ?? 0;
+				const total: number = countResult.rows[0]?.total ?? 0;
 
 				/* Items query to fetch actual rows with filters + ordering + pagination. */
 				const itemsSql: string = `SELECT * FROM ${schema}.${tableName}${whereSql}${orderBySql}${paginationSql}`;
 
 				/* Execute items query with combined parameter list. First WHERE parameters, then LIMIT/OFFSET parameters. */
-				const itemsResult = await pool.query(itemsSql, [
+				const itemsResult: any = await pool.query(itemsSql, [
 					...whereParams,
 					...paginationParams,
 				]);

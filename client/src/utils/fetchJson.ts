@@ -4,7 +4,7 @@ export const fetchJson = async <T>(
 	signal?: AbortSignal
 ): Promise<T> => {
 	/* Await to fetch the data. */
-	const res = await fetch(url, { signal });
+	const res: Response = await fetch(url, { signal });
 
 	/* If the server responds with an error status, stop and throw an error. */
 	if (!res.ok) throw new Error(`Request failed: ${res.status}`);

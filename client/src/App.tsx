@@ -8,10 +8,10 @@ import CultureGastroPage from './pages/CultureGastroPage';
 import AboutPage from './pages/AboutPage';
 import NotFound from './layout/NotFound';
 
-const NAV_LINK_BASE =
+const NAV_LINK_BASE: string =
 	'navlink cursor-pointer wrap text-center text-sm sm:text-base mt-12 px-2 md:px-4 lg:mt-0';
-const NAV_LINK_ACTIVE = 'text-odb';
-const NAV_LINK_INACTIVE = 'text-olb';
+const NAV_LINK_ACTIVE: string = 'text-odb';
+const NAV_LINK_INACTIVE: string = 'text-olb';
 
 const MAP_CENTER: [number, number] = [49.81637370301487, 18.227087042101008];
 
@@ -25,11 +25,11 @@ const NAV_ITEMS: NavItem[] = [
 
 const App = () => {
 	const mapRef = useRef<null>(null);
-	const [isMenuActive, setIsMenuActive] = useState(false);
+	const [isMenuActive, setIsMenuActive] = useState<boolean>(false);
 
-	const toggleMenu = () => setIsMenuActive(v => !v);
+	const toggleMenu = (): void => setIsMenuActive(v => !v);
 
-	const rightPanelClasses = useMemo(
+	const rightPanelClasses = useMemo<string>(
 		() =>
 			[
 				'absolute h-screen w-screen right-0 bg-white 2xl:translate-x-0 2xl:opacity-100 2xl:relative 2xl:basis-2/5 flex flex-col z-1000 duration-600 ease-in-out',
@@ -40,16 +40,24 @@ const App = () => {
 		[isMenuActive]
 	);
 
-	const menuIconSrc = useMemo(
+	const menuIconSrc = useMemo<string>(
 		() =>
 			`src/assets/icons/${isMenuActive ? 'close-icon.svg' : 'menu-icon.svg'}`,
+		[isMenuActive]
+	);
+
+	const menuIconHoverSrc = useMemo<string>(
+		() =>
+			`src/assets/icons/${
+				isMenuActive ? 'close-icon-hover.svg' : 'menu-icon-hover.svg'
+			}`,
 		[isMenuActive]
 	);
 
 	return (
 		<div className="min-h-screen flex font-montserrat">
 			<div className="basis-5/5 2xl:basis-3/5 flex flex-col">
-				<header className="fixed flex justify-between z-2000 w-full 2xl:w-auto pb-2 bg-white">
+				<div className="fixed flex justify-between z-2000 w-full 2xl:w-auto pb-2 bg-white">
 					<div className="pt-3 px-4 z-10">
 						<NavLink to="/" end>
 							<img
@@ -66,9 +74,15 @@ const App = () => {
 						onClick={toggleMenu}
 						aria-label="Toggle menu"
 					>
-						<img src={menuIconSrc} alt="menu icon" width={27.5} />
+						<img
+							src={menuIconSrc}
+							alt="menu icon"
+							width={27.5}
+							onMouseOver={e => (e.currentTarget.src = menuIconHoverSrc)}
+							onMouseOut={e => (e.currentTarget.src = menuIconSrc)}
+						/>
 					</button>
-				</header>
+				</div>
 
 				<div className="mx-4 mt-12 mb-4 flex flex-1 items-center justify-center">
 					<MapContainer

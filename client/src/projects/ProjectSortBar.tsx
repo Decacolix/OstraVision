@@ -19,7 +19,7 @@ type Props = {
 };
 
 /* Helper to build a relative path to an icon by filename. */
-const iconPath = (name: string) => `src/assets/icons/${name}`;
+const iconPath = (name: string): string => `src/assets/icons/${name}`;
 
 /* Sorting bar compoment: shows 4 icon total (sort type alphabetical / time and sort direction asc / desc). Each icon has 3 visual states (active / hover / inactive). */
 const ProjectSortBar = ({
@@ -33,7 +33,7 @@ const ProjectSortBar = ({
 	const [hovered, setHovered] = useState<HoverKey>(null);
 
 	/* Determine which icon to use for the alphabetical sort icon. */
-	const alphabeticalIcon: string = useMemo(() => {
+	const alphabeticalIcon = useMemo<string>(() => {
 		if (sortType === 'alphabetical')
 			return iconPath('sort-alphabetical-active.svg');
 		if (hovered === 'alphabetical')
@@ -42,21 +42,21 @@ const ProjectSortBar = ({
 	}, [sortType, hovered]);
 
 	/* Determine which icon to use for the time sort icon. */
-	const timeIcon: string = useMemo(() => {
+	const timeIcon = useMemo<string>(() => {
 		if (sortType === 'time') return iconPath('sort-time-active.svg');
 		if (hovered === 'time') return iconPath('sort-time-hover.svg');
 		return iconPath('sort-time-inactive.svg');
 	}, [sortType, hovered]);
 
 	/* Determine which icon to use for the ascending direction icon. */
-	const ascIcon: string = useMemo(() => {
+	const ascIcon = useMemo<string>(() => {
 		if (sortDirection === 'asc') return iconPath('arrow-active.svg');
 		if (hovered === 'asc') return iconPath('arrow-hover.svg');
 		return iconPath('arrow-inactive.svg');
 	}, [sortDirection, hovered]);
 
 	/* Determine which icon to use for the descending direction icon. */
-	const descIcon: string = useMemo(() => {
+	const descIcon = useMemo<string>(() => {
 		if (sortDirection === 'desc') return iconPath('arrow-active.svg');
 		if (hovered === 'desc') return iconPath('arrow-hover.svg');
 		return iconPath('arrow-inactive.svg');

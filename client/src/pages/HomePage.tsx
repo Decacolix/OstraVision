@@ -19,7 +19,7 @@ type ListResponse<T> = {
 };
 
 /* Number of latest updates to be displayed on the homepage. */
-const UPDATES_LIMIT = 6;
+const UPDATES_LIMIT: number = 6;
 
 /* Homepage component. */
 const HomePage = () => {
@@ -36,7 +36,7 @@ const HomePage = () => {
 	const [error, setError] = useState<string | null>(null);
 
 	/* Extracts unique structure IDs from updates. */
-	const structureIds = useMemo(() => {
+	const structureIds = useMemo<string[]>(() => {
 		return Array.from(
 			new Set(updates.map(update => update.structure_id).filter(Boolean))
 		);
@@ -45,16 +45,16 @@ const HomePage = () => {
 	/* Effect responsible for loading the latest updates from the API. Runs only once on component mount. */
 	useEffect(() => {
 		/* AbortController allows us to cancel the request if the component unmounts. */
-		const controller = new AbortController();
+		const controller: AbortController = new AbortController();
 
-		const load = async () => {
+		const load = async (): Promise<void> => {
 			/* Update UI state to show loading and clear any previous error. */
 			setLoading(true);
 			setError(null);
 
 			/* Query parameters. */
 			try {
-				const params = new URLSearchParams({
+				const params: URLSearchParams = new URLSearchParams({
 					limit: String(UPDATES_LIMIT),
 					offset: '0',
 					order_by: 'update_date',
@@ -62,10 +62,9 @@ const HomePage = () => {
 				});
 
 				/* Fetch the update from the API. */
-				const res = await fetchJson<ListResponse<UpdateRow>>(
-					`${API.updates}?${params.toString()}`,
-					controller.signal
-				);
+				const res: ListResponse<UpdateRow> = await fetchJson<
+					ListResponse<UpdateRow>
+				>(`${API.updates}?${params.toString()}`, controller.signal);
 
 				/* Store fetched updates in the state. */
 				setUpdates(res.items ?? []);
@@ -95,15 +94,15 @@ const HomePage = () => {
 		if (structureIds.length === 0) return;
 
 		/* AbortController allows us to cancel the request if the component unmounts. */
-		const controller = new AbortController();
+		const controller: AbortController = new AbortController();
 
-		const loadNames = async () => {
+		const loadNames = async (): Promise<null | undefined> => {
 			try {
-				const pairs = await Promise.all(
+				const pairs: [string, string][] = await Promise.all(
 					/* Fetch structure details in parallel for each structure ID. */
 					structureIds.map(async id => {
 						try {
-							const row = await fetchJson<StructureRow>(
+							const row: StructureRow = await fetchJson<StructureRow>(
 								`${API.structures}${id}`,
 								controller.signal
 							);
@@ -119,7 +118,7 @@ const HomePage = () => {
 
 				/* Merge newly fetched structure names into existing state. */
 				setStructureNames(prev => {
-					const next = { ...prev };
+					const next: { [x: string]: string } = { ...prev };
 					for (const [id, name] of pairs) next[id] = name;
 					return next;
 				});

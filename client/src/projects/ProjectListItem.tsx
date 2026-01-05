@@ -1,6 +1,6 @@
-import { truncateText, formatDaysAgo } from '../utils';
+import { truncateText, formatDaysAgo, CATEGORIES } from '../utils';
+import { formatCzk } from '../utils/formatCzk';
 import { formatDate } from '../utils/formatDate';
-import { formatPrice } from '../utils/formatPrice';
 
 /* Exported type representing one project record from the API. */
 export type Structure = {
@@ -21,34 +21,6 @@ type Props = {
 	onClick?: () => void;
 };
 
-/* Convert the numeric type value into category label. */
-const setType = (type: number): string => {
-	switch (type) {
-		case 0:
-			return 'Služby';
-		case 1:
-			return 'Obchody';
-		case 2:
-			return 'Vzdělávání';
-		case 3:
-			return 'Doprava';
-		case 4:
-			return 'Bydlení';
-		case 5:
-			return 'Příroda';
-		case 6:
-			return 'Sport';
-		case 7:
-			return 'Kultura';
-		case 8:
-			return 'Kanceláře';
-		case 9:
-			return 'Průmysl';
-		default:
-			return '';
-	}
-};
-
 /* Project list item component: renders a single structure item in the list. */
 const ProjectListItem = ({
 	structure,
@@ -67,10 +39,15 @@ const ProjectListItem = ({
 		: '(popisek není k dispozici)';
 
 	/* Category label, shows empty string for missing value. */
-	const type: string = structure.type ? setType(structure.type) : '';
+	const type: string =
+		(structure.type as number) >= 0 &&
+		(structure.type as number) < CATEGORIES.length
+			? CATEGORIES[structure.type as number]
+			: '';
 
+	/* Budget of the project, shows empty string for missing value. */
 	const budget: string = structure.budget
-		? `${formatPrice(structure.budget)} Kč`
+		? `${formatCzk(structure.budget)}`
 		: '';
 
 	return (

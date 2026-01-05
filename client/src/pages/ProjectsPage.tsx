@@ -6,6 +6,8 @@ import ProjectSortBar, {
 import ProjectListItem, { type Structure } from '../projects/ProjectListItem';
 import Loader from '../layout/Loader';
 import { fetchJson, API } from '../utils';
+import FilterButton from '../projects/FilterButton';
+import FilterCard from '../projects/FilterCard';
 
 /* Represents one row returned from the photo endpoint. */
 type PhotoRow = {
@@ -24,8 +26,18 @@ type ListResponse<T> = {
 };
 
 /* How many structures are requsted at once. */
-const LIMIT = 20;
+const LIMIT: number = 20;
 
+const parseBudget = (value: unknown): number => {
+	if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+	if (typeof value === 'string') {
+		const n: number = Number(value);
+		return Number.isFinite(n) ? n : 0;
+	}
+	return 0;
+};
+
+/* Projects page component: renders the whole page with projects. */
 const ProjectsPage = () => {
 	/* Sorting UI state: sortType – decides which field we order by, sortDirection – decides between ascending and descending order. */
 	const [sortType, setSortType] = useState<SortType>('time');
@@ -56,13 +68,13 @@ const ProjectsPage = () => {
 	const abortRef = useRef<AbortController | null>(null);
 
 	/* Decide which database coluimn to order by, based on sort type. */
-	const orderBy = useMemo(
+	const orderBy = useMemo<'name' | 'updated_at'>(
 		() => (sortType === 'alphabetical' ? 'name' : 'updated_at'),
 		[sortType]
 	);
 
 	/* Whether we still have more items to load. If structures.length < total, there are more results available. */
-	const hasMore = useMemo(
+	const hasMore = useMemo<boolean>(
 		() => structures.length < total,
 		[structures.length, total]
 	);
@@ -71,16 +83,16 @@ const ProjectsPage = () => {
 	const loadPhotosForStructures = async (
 		items: Structure[],
 		signal: AbortSignal
-	) => {
+	): Promise<void> => {
 		/* If there are no items, abort the function. */
 		if (!items.length) return;
 
 		/* For each structure, fetch related photos. */
-		const pairs = await Promise.all(
+		const pairs: [string, string | null][] = await Promise.all(
 			items.map(async structure => {
 				try {
 					/* Build query parameters for the photos endpoint. */
-					const params = new URLSearchParams({
+					const params: URLSearchParams = new URLSearchParams({
 						structure_id: structure.structure_id,
 						limit: '10',
 						order_by: 'photo_date',
@@ -88,13 +100,12 @@ const ProjectsPage = () => {
 					});
 
 					/* Fetch photos list response for this structure. */
-					const res = await fetchJson<ListResponse<PhotoRow>>(
-						`${API.photos}?${params.toString()}`,
-						signal
-					);
+					const res: ListResponse<PhotoRow> = await fetchJson<
+						ListResponse<PhotoRow>
+					>(`${API.photos}?${params.toString()}`, signal);
 
 					/* Pick a cover photo that is not tied to an update. */
-					const cover = res.items.find(
+					const cover: PhotoRow | undefined = res.items.find(
 						photo => photo.update_id === null || photo.update_id === undefined
 					);
 
@@ -108,7 +119,9 @@ const ProjectsPage = () => {
 		);
 
 		setPhotosByStructureId(prev => {
-			const next = { ...prev };
+			const next: {
+				[x: string]: string | null;
+			} = { ...prev };
 
 			for (const [id, url] of pairs) next[id] = url;
 			return next;
@@ -116,11 +129,11 @@ const ProjectsPage = () => {
 	};
 
 	/* In-flight guard prevents the same page from triggering multiple loads. This is separate from loading state to avoid re-render timing issues. */
-	const inFlightRef = useRef(false);
+	const inFlightRef = useRef<boolean>(false);
 
 	/* Load one page of structures based on offset. */
-	const loadPage = useCallback(
-		async (nextOffset: number) => {
+	const loadPage = useCallback<(nextOffset: number) => Promise<void>>(
+		async (nextOffset: number): Promise<void> => {
 			/* If a request is already running, ignore this call. */
 			if (inFlightRef.current) return;
 			inFlightRef.current = true;
@@ -131,12 +144,12 @@ const ProjectsPage = () => {
 
 			/* Abort previous request, if any, and create a fresh controller for this one. */
 			abortRef.current?.abort();
-			const controller = new AbortController();
+			const controller: AbortController = new AbortController();
 			abortRef.current = controller;
 
 			try {
 				/* Build query parameters for the structures endpoint. Limit and offset are for pagination (infinite scroll). */
-				const params = new URLSearchParams({
+				const params: URLSearchParams = new URLSearchParams({
 					limit: String(LIMIT),
 					offset: String(nextOffset),
 					order_by: orderBy,
@@ -144,18 +157,18 @@ const ProjectsPage = () => {
 				});
 
 				/* Fetch the structure page from the API. */
-				const res = await fetchJson<ListResponse<Structure>>(
-					`${API.structures}?${params.toString()}`,
-					controller.signal
-				);
+				const res: ListResponse<Structure> = await fetchJson<
+					ListResponse<Structure>
+				>(`${API.structures}?${params.toString()}`, controller.signal);
 
 				/* Store total count for pagination logic. */
 				setTotal(res.total ?? 0);
 
 				/* Update list: if nextOffset is 0, replace the list (fresh load), otherwise append. De-duplicate by structure_id to avoid duplicate keys. */
 				setStructures(prev => {
-					const merged = nextOffset === 0 ? res.items : [...prev, ...res.items];
-					const byId = new Map(
+					const merged: Structure[] =
+						nextOffset === 0 ? res.items : [...prev, ...res.items];
+					const byId: Map<string, Structure> = new Map(
 						merged.map(structure => [structure.structure_id, structure])
 					);
 					return Array.from(byId.values());
@@ -185,7 +198,7 @@ const ProjectsPage = () => {
 	);
 
 	/* Reset list state and load the first page again. Used when sortring changes, because we want a new dataset from the server. */
-	const resetAndReload = useCallback(() => {
+	const resetAndReload = useCallback<() => void>(() => {
 		/* Clear current items and photo cache. */
 		setStructures([]);
 		setPhotosByStructureId({});
@@ -205,10 +218,10 @@ const ProjectsPage = () => {
 
 	/* Infinite scrolling. Observe the sentinel element at the end of the list. When it comes near the viewport, load the next page if there are more items and we are currently not loading. */
 	useEffect(() => {
-		const element = sentinelRef.current;
+		const element: HTMLDivElement | null = sentinelRef.current;
 		if (!element) return;
 
-		const observer = new IntersectionObserver(
+		const observer: IntersectionObserver = new IntersectionObserver(
 			entries => {
 				/* Use the first observer entry. We observer only one element. */
 				if (entries[0]?.isIntersecting && hasMore && !loading) {
@@ -227,25 +240,136 @@ const ProjectsPage = () => {
 		return () => observer.disconnect();
 	}, [hasMore, loading, offset, loadPage]);
 
+	/* Filter UI state, filtersOpen controls whether the filter card is expanded/collapsed. */
+	const [filtersOpen, setFiltersOpen] = useState<boolean>(false);
+
+	/* Selected category indices (multi-select). These map directly to CATEGORIES and structure.type numeric values. */
+	const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+
+	/* Compute the largest budget value from the currently loaded structures. Used as the slider's upper bound. */
+	const absoluteMaxBudget = useMemo<number>(() => {
+		if (!structures.length) return 0;
+		return Math.max(
+			...structures.map(structure => parseBudget(structure.budget))
+		);
+	}, [structures]);
+
+	/* Budget range filter state. Defaults are [0, absoluteMaxBudget]. */
+	const [minBudget, setMinBudget] = useState<number>(0);
+	const [maxBudget, setMaxBudget] = useState<number>(absoluteMaxBudget);
+
+	/* Track the previous absoluteMaxBudget so we can detect whether the user "stays at max" while data loads. */
+	const prevAbsMaxRef = useRef<number>(0);
+
+	/* Keep the maxBudget aligned with absoluteMaxBudget when the user hasn't manually reduced it. */
+	useEffect(() => {
+		const prev: number = prevAbsMaxRef.current;
+
+		/* If user was previously at max (or max was still 0), treat it as "auto" and keep updating it. */
+		const userIsAtMax: boolean = maxBudget === prev || maxBudget === 0;
+
+		/* When the dataset grows and max increases, keep the user's max pinned to the new top (only if user didn't set custom max). */
+		if (userIsAtMax) setMaxBudget(absoluteMaxBudget);
+
+		/* If min is now above the new absolute max (e.g., data changed), reset it to 0 to keep filters valid. */
+		if (minBudget > absoluteMaxBudget) setMinBudget(0);
+
+		/* Store current max for the next comparison. */
+		prevAbsMaxRef.current = absoluteMaxBudget;
+	}, [absoluteMaxBudget, minBudget, maxBudget]);
+
+	/* Decide whether filters are currently active, used for button styling and showing the reset icon. */
+	const hasActiveFilters = useMemo<boolean>(() => {
+		const categoriesActive: boolean = selectedCategories.length > 0;
+
+		/* Budget filter is active if min > 0 OR the user reduced max below the current absolute maximum. */
+		const budgetActive: boolean =
+			minBudget > 0 || (absoluteMaxBudget > 0 && maxBudget < absoluteMaxBudget);
+
+		return categoriesActive || budgetActive;
+	}, [selectedCategories.length, minBudget, maxBudget, absoluteMaxBudget]);
+
+	/* Reset filters back to defaults. */
+	const resetFilters = useCallback<() => void>(() => {
+		setSelectedCategories([]);
+		setMinBudget(0);
+
+		/* Reset max to the current dataset max. */
+		setMaxBudget(absoluteMaxBudget);
+	}, [absoluteMaxBudget]);
+
+	/* Toggle a single category index on/off in the selectedCategories array. */
+	const toggleCategory = useCallback<(idx: number) => void>((idx: number) => {
+		setSelectedCategories(prev =>
+			prev.includes(idx) ? prev.filter(x => x !== idx) : [...prev, idx]
+		);
+	}, []);
+
+	/* Apply filters to the already-loaded structures, client-side filtering, no extra API calls. */
+	const filteredStructures = useMemo<Structure[]>(() => {
+		const categorySet: Set<number> = new Set(selectedCategories);
+
+		return structures.filter(structure => {
+			/* Category filter: if none selected, allow all; otherwise require structure.type to be selected. */
+			const typeValue: number =
+				typeof structure.type === 'number' ? structure.type : -1;
+			const categoryOk: boolean =
+				categorySet.size === 0 ? true : categorySet.has(typeValue);
+
+			/* Budget filter: parse budget and keep only values within [minBudget, maxBudget]. */
+			const budget: number = parseBudget(structure.budget);
+			const budgetOk: boolean = budget >= minBudget && budget <= maxBudget;
+
+			return categoryOk && budgetOk;
+		});
+	}, [structures, selectedCategories, minBudget, maxBudget]);
+
 	return (
-		<div className="w-full">
+		<div className="w-full max-h-[750px] overflow-y-scroll ">
 			{
 				/* Sort bar is hidden when there is an error. */
 				!error && (
-					<ProjectSortBar
-						sortType={sortType}
-						sortDirection={sortDirection}
-						onChangeSortType={setSortType}
-						onChangeSortDirection={setSortDirection}
-						disabled={loading}
-					/>
+					<div className="flex flex-col pr-4">
+						{/* Filters button row. */}
+						<div className="flex items-center justify-start">
+							<FilterButton
+								hasActiveFilters={hasActiveFilters}
+								onToggle={() => setFiltersOpen(v => !v)}
+								onReset={resetFilters}
+								disabled={loading}
+							/>
+						</div>
+
+						{/* Collapsible filters card (categories + budget range). */}
+						<FilterCard
+							isOpen={filtersOpen}
+							selectedCategories={selectedCategories}
+							onToggleCategory={toggleCategory}
+							minBudget={minBudget}
+							maxBudget={maxBudget}
+							absoluteMaxBudget={absoluteMaxBudget}
+							onChangeMinBudget={setMinBudget}
+							onChangeMaxBudget={setMaxBudget}
+						/>
+
+						{/* Sort bar stays below filters for a clean UI hierarchy. */}
+						<div className="mt-4">
+							<ProjectSortBar
+								sortType={sortType}
+								sortDirection={sortDirection}
+								onChangeSortType={setSortType}
+								onChangeSortDirection={setSortDirection}
+								disabled={loading}
+							/>
+						</div>
+					</div>
 				)
 			}
 
-			<div className="max-h-[750px] overflow-y-scroll pr-4">
+			<div className="pr-4">
 				{
 					/* Render each structure as a list item. */
-					structures.map(structure => (
+					filteredStructures.map(structure => (
 						<div id={structure.structure_id} key={structure.structure_id}>
 							<ProjectListItem
 								key={structure.structure_id}
@@ -274,7 +398,7 @@ const ProjectsPage = () => {
 
 				{
 					/* Empty state – shown when no projects are found and we're not loading. */
-					!loading && !error && structures.length === 0 && (
+					!loading && !error && filteredStructures.length === 0 && (
 						<div className="m-4 font-bold">Nebyly nalezeny žádné projekty.</div>
 					)
 				}
