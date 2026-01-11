@@ -8,7 +8,7 @@ const NotFound = () => {
 				<span className="text-odb">4</span>
 			</p>
 			<p className="text-2xl font-bold my-4">Tato stránka neexistuje.</p>
-			<img src="src/assets/images/cat.gif" alt="ostravision logo" width={250} />
+			<img src="/src/assets/images/cat.gif" alt="cat" width={250} />
 		</div>
 	);
 };

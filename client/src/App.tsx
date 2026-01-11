@@ -7,6 +7,7 @@ import ProjectsPage from './pages/ProjectsPage';
 import CultureGastroPage from './pages/CultureGastroPage';
 import AboutPage from './pages/AboutPage';
 import NotFound from './layout/NotFound';
+import ProjectDetailPage from './projects/ProjectDetailPage';
 
 const NAV_LINK_BASE: string =
 	'navlink cursor-pointer wrap text-center text-sm sm:text-base mt-12 px-2 md:px-4 lg:mt-0';
@@ -42,13 +43,13 @@ const App = () => {
 
 	const menuIconSrc = useMemo<string>(
 		() =>
-			`src/assets/icons/${isMenuActive ? 'close-icon.svg' : 'menu-icon.svg'}`,
+			`/src/assets/icons/${isMenuActive ? 'close-icon.svg' : 'menu-icon.svg'}`,
 		[isMenuActive]
 	);
 
 	const menuIconHoverSrc = useMemo<string>(
 		() =>
-			`src/assets/icons/${
+			`/src/assets/icons/${
 				isMenuActive ? 'close-icon-hover.svg' : 'menu-icon-hover.svg'
 			}`,
 		[isMenuActive]
@@ -61,7 +62,7 @@ const App = () => {
 					<div className="pt-3 px-4 z-10">
 						<NavLink to="/" end>
 							<img
-								src="src/assets/images/logo.svg"
+								src="/src/assets/images/logo.svg"
 								alt="ostravision logo"
 								width={250}
 							/>
@@ -122,6 +123,7 @@ const App = () => {
 					<Routes>
 						<Route path="/" element={<HomePage />} />
 						<Route path="/projekty" element={<ProjectsPage />} />
+						<Route path="/projekty/:id" element={<ProjectDetailPage />} />
 						<Route path="/kultura-gastro" element={<CultureGastroPage />} />
 						<Route path="/o-nas" element={<AboutPage />} />
 						<Route path="*" element={<NotFound />} />

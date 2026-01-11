@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import UpdateListItem, { type UpdateRow } from '../projects/UpdateListItem';
 import { API, fetchJson } from '../utils';
 import Loader from '../layout/Loader';
+import { useNavigate, type NavigateFunction } from 'react-router';
 
 /* Type representing a minimal structure record returned from the API. */
 type StructureRow = {
@@ -135,6 +136,9 @@ const HomePage = () => {
 		return () => controller.abort();
 	}, [structureIds]);
 
+	/* Navigate to the project detail page. */
+	const navigate: NavigateFunction = useNavigate();
+
 	return (
 		<div>
 			<div className="text-left border-b-gray-400 border-b pb-3">
@@ -186,7 +190,7 @@ const HomePage = () => {
 							<UpdateListItem
 								update={update}
 								structureName={structureNames[update.structure_id] ?? ''}
-								onClick={() => {}}
+								onClick={() => navigate(`/projekty/${update.structure_id}`)}
 							/>
 						</div>
 					))

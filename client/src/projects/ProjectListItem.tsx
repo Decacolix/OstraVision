@@ -63,7 +63,7 @@ const ProjectListItem = ({
 					}}
 					onClick={onClick}
 				>
-					<div className="px-3 text-left w-full sm:w-[80%] bg-gray-700/50  flex flex-col justify-center items-start">
+					<div className="px-3 text-left w-full sm:w-[80%] bg-gray-700/50 flex flex-col justify-center items-start">
 						<h2 className="font-semibold text-md sm:text-lg">{name}</h2>
 						<p className="text-xs sm:text-sm">{shortDescription}</p>
 					</div>
@@ -73,7 +73,7 @@ const ProjectListItem = ({
 						{
 							/* Only render the category label if the type exists. Otherwise render an empty div to preserve spacing. */
 							type ? (
-								<div className="bg-gray-700 px-2 rounded-md  text-center sm:text-left mb-1 sm:mb-0 mr-2">
+								<div className="bg-gray-700 px-2 rounded-md text-center sm:text-left mb-1 sm:mb-0 mr-2">
 									{type}
 								</div>
 							) : (
@@ -83,7 +83,7 @@ const ProjectListItem = ({
 						{
 							/* Only render the price label if the type exists. Otherwise render an empty div to preserve spacing. */
 							budget ? (
-								<div className="bg-olb px-2 rounded-md  text-center sm:text-left mb-1 sm:mb-0">
+								<div className="bg-olb px-2 rounded-md text-center sm:text-left mb-1 sm:mb-0">
 									{budget}
 								</div>
 							) : (

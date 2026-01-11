@@ -8,6 +8,8 @@ import Loader from '../layout/Loader';
 import { fetchJson, API } from '../utils';
 import FilterButton from '../projects/FilterButton';
 import FilterCard from '../projects/FilterCard';
+import SearchBar from '../projects/SearchBar';
+import { useNavigate, type NavigateFunction } from 'react-router';
 
 /* Represents one row returned from the photo endpoint. */
 type PhotoRow = {
@@ -243,6 +245,9 @@ const ProjectsPage = () => {
 	/* Filter UI state, filtersOpen controls whether the filter card is expanded/collapsed. */
 	const [filtersOpen, setFiltersOpen] = useState<boolean>(false);
 
+	/* Search state, filters projects by name. */
+	const [searchText, setSearchText] = useState<string>('');
+
 	/* Selected category indices (multi-select). These map directly to CATEGORIES and structure.type numeric values. */
 	const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
 
@@ -308,6 +313,7 @@ const ProjectsPage = () => {
 	/* Apply filters to the already-loaded structures, client-side filtering, no extra API calls. */
 	const filteredStructures = useMemo<Structure[]>(() => {
 		const categorySet: Set<number> = new Set(selectedCategories);
+		const query: string = searchText.trim().toLowerCase();
 
 		return structures.filter(structure => {
 			/* Category filter: if none selected, allow all; otherwise require structure.type to be selected. */
@@ -320,9 +326,18 @@ const ProjectsPage = () => {
 			const budget: number = parseBudget(structure.budget);
 			const budgetOk: boolean = budget >= minBudget && budget <= maxBudget;
 
-			return categoryOk && budgetOk;
+			/* Search filter: case-insensitive substring match on name. */
+			const name: string =
+				typeof structure.name === 'string' ? structure.name : '';
+			const searchOk: boolean =
+				query.length === 0 ? true : name.toLowerCase().includes(query);
+
+			return categoryOk && budgetOk && searchOk;
 		});
-	}, [structures, selectedCategories, minBudget, maxBudget]);
+	}, [structures, selectedCategories, minBudget, maxBudget, searchText]);
+
+	/* Navigate to the project detail page. */
+	const navigate: NavigateFunction = useNavigate();
 
 	return (
 		<div className="w-full max-h-[750px] overflow-y-scroll ">
@@ -331,11 +346,16 @@ const ProjectsPage = () => {
 				!error && (
 					<div className="flex flex-col pr-4">
 						{/* Filters button row. */}
-						<div className="flex items-center justify-start">
+						<div className="flex items-center justify-between">
 							<FilterButton
 								hasActiveFilters={hasActiveFilters}
 								onToggle={() => setFiltersOpen(v => !v)}
 								onReset={resetFilters}
+								disabled={loading}
+							/>
+							<SearchBar
+								value={searchText}
+								onChange={setSearchText}
 								disabled={loading}
 							/>
 						</div>
@@ -376,7 +396,7 @@ const ProjectsPage = () => {
 								structure={structure}
 								photoUrl={photosByStructureId[structure.structure_id]}
 								lastUpdatedLabel={structure.updated_at ?? ''}
-								onClick={() => {}}
+								onClick={() => navigate(`/projekty/${structure.structure_id}`)}
 							/>
 						</div>
 					))
