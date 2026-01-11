@@ -10,7 +10,7 @@ type Props = {
 
 /* Gallery component: shows project photos (carousel) using Embla. */
 const Gallery = ({ photos }: Props) => {
-	/* Filter only photos that have a valid photo_source (URL) and are NOT tied to a specific update (update_id must be null/undefined). This keeps the main gallery clean; update-specific photos will be shown in update sections later. */
+	/* Filter only photos that have a valid photo_source (URL) and are not tied to a specific update (update_id must be null/undefined). This keeps the main gallery clean; update-specific photos are shown in update sections. */
 	const items = useMemo<PhotoRow[]>(
 		() =>
 			(photos ?? []).filter(
