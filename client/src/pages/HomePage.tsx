@@ -189,7 +189,8 @@ const HomePage = () => {
 						<div key={update.update_id} className="mb-4 pr-4">
 							<UpdateListItem
 								update={update}
-								structureName={structureNames[update.structure_id] ?? ''}
+								title={structureNames[update.structure_id] ?? ''}
+								showDaysAgo={true}
 								onClick={() => navigate(`/projekty/${update.structure_id}`)}
 							/>
 						</div>

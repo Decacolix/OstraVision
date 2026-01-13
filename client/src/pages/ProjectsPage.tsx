@@ -351,12 +351,12 @@ const ProjectsPage = () => {
 								hasActiveFilters={hasActiveFilters}
 								onToggle={() => setFiltersOpen(v => !v)}
 								onReset={resetFilters}
-								disabled={loading}
+								disabled={false}
 							/>
 							<SearchBar
 								value={searchText}
 								onChange={setSearchText}
-								disabled={loading}
+								disabled={false}
 							/>
 						</div>
 

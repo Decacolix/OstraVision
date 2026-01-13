@@ -33,7 +33,7 @@ const App = () => {
 	const rightPanelClasses = useMemo<string>(
 		() =>
 			[
-				'absolute h-screen w-screen right-0 bg-white 2xl:translate-x-0 2xl:opacity-100 2xl:relative 2xl:basis-2/5 flex flex-col z-1000 duration-600 ease-in-out',
+				'absolute h-screen w-screen right-0 bg-white 2xl:translate-x-0 2xl:opacity-100 2xl:relative 2xl:basis-2/5 flex flex-col z-1000 duration-600 ease-in-out max-w-[765px] min-h-[820px]',
 				isMenuActive
 					? 'translate-x-0 opacity-100'
 					: 'translate-x-full opacity-0',
@@ -56,7 +56,7 @@ const App = () => {
 	);
 
 	return (
-		<div className="min-h-screen flex font-montserrat">
+		<div className="min-h-screen flex font-montserrat justify-between">
 			<div className="basis-5/5 2xl:basis-3/5 flex flex-col">
 				<div className="fixed flex justify-between z-2000 w-full 2xl:w-auto pb-2 bg-white">
 					<div className="pt-3 px-4 z-10">
@@ -73,7 +73,6 @@ const App = () => {
 						type="button"
 						className="px-3 cursor-pointer 2xl:hidden z-2000 self-end"
 						onClick={toggleMenu}
-						aria-label="Toggle menu"
 					>
 						<img
 							src={menuIconSrc}
@@ -85,7 +84,7 @@ const App = () => {
 					</button>
 				</div>
 
-				<div className="mx-4 mt-12 mb-4 flex flex-1 items-center justify-center">
+				<div className="mx-4 mt-12 mb-4 flex flex-1 items-center justify-center min-h-[770px]">
 					<MapContainer
 						center={MAP_CENTER}
 						zoom={12}

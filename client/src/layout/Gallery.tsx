@@ -3,28 +3,77 @@ import useEmblaCarousel from 'embla-carousel-react';
 import { formatDate } from '../utils/formatDate';
 import type { PhotoRow } from '../projects/ProjectDetailPage';
 
+/* Gallery size: sm (small), md (medium), lg (large). */
+type GallerySize = 'sm' | 'md' | 'lg';
+
+/* Gallery content variant: structure (only photos where update_id is null/undefined, default), update (only photos where update_id === updateId), all (photos with photo source, no filtering by update_id). */
+type GalleryVariant = 'structure' | 'update' | 'all';
+
 /* Component props: photos (array of photos loaded for the project detail page). */
 type Props = {
 	photos: PhotoRow[];
+	size?: GallerySize;
+	variant?: GalleryVariant;
+	updateId?: string;
+};
+
+/* Size presets for the gallery size. */
+const SIZE_PRESETS: Record<
+	GallerySize,
+	{ slideBasis: string; imgHeight: string }
+> = {
+	/* Small size. */
+	sm: { slideBasis: 'min-w-[50%] basis-[50%]', imgHeight: 'h-[220px]' },
+
+	/* Medium: default size. */
+	md: { slideBasis: 'min-w-[82%] basis-[82%]', imgHeight: 'h-[360px]' },
+
+	/* Large size.. */
+	lg: { slideBasis: 'min-w-[88%] basis-[88%]', imgHeight: 'h-[460px]' },
 };
 
 /* Gallery component: shows project photos (carousel) using Embla. */
-const Gallery = ({ photos }: Props) => {
+const Gallery = ({
+	photos,
+	size = 'md',
+	variant = 'structure',
+	updateId,
+}: Props) => {
 	/* Filter only photos that have a valid photo_source (URL) and are not tied to a specific update (update_id must be null/undefined). This keeps the main gallery clean; update-specific photos are shown in update sections. */
-	const items = useMemo<PhotoRow[]>(
-		() =>
-			(photos ?? []).filter(
-				photo =>
-					photo?.photo_source &&
-					(photo.update_id === null || photo.update_id === undefined)
-			),
-		[photos]
-	);
+	const items = useMemo<PhotoRow[]>(() => {
+		const base: PhotoRow[] = (photos ?? []).filter(
+			photo => photo?.photo_source
+		);
+
+		/* If variant is "all". */
+		if (variant === 'all') return base;
+
+		/* If variant is "update". */
+		if (variant === 'update') {
+			if (typeof updateId !== 'string' || !updateId.trim()) return [];
+			return base.filter(photo => photo.update_id === updateId);
+		}
+
+		/* If variant is "structure" (default). */
+		return base.filter(
+			photo => photo.update_id === null || photo.update_id === undefined
+		);
+	}, [photos, variant, updateId]);
+
+	/* Size preset. */
+	const preset: {
+		slideBasis: string;
+		imgHeight: string;
+	} = SIZE_PRESETS[size];
+
+	/* Disable dragging if there is only one slide. */
+	const canDrag: boolean = items.length > 1;
 
 	/* Initialize Embla carousel; loop: infinite scrolling; align: center the currently selected slide. */
 	const [emblaRef, emblaApi] = useEmblaCarousel({
 		loop: true,
 		align: 'center',
+		watchDrag: canDrag,
 	});
 
 	/* Index of the currently selected snap (slide). */
@@ -92,7 +141,7 @@ const Gallery = ({ photos }: Props) => {
 				<div
 					className={[
 						'flex touch-pan-y select-none',
-						photos.length > 1 ? '' : 'justify-center',
+						items.length > 1 ? 'justify-evenly' : 'justify-start',
 					].join(' ')}
 				>
 					{items.map((photo, i) => {
@@ -115,14 +164,21 @@ const Gallery = ({ photos }: Props) => {
 							<div
 								key={photo.photo_id ?? `${photo.photo_source}-${i}`}
 								className={[
-									'transition-opacity duration-200 min-w-[82%] mx-3 grow-0 shrink-0 basis-[82%] cursor-grab active:cursor-grabbing',
+									'transition-opacity duration-200 mx-3 grow-0 shrink-0 ml-0 mr-6',
+									preset.slideBasis,
+									items.length > 1
+										? 'cursor-grab active:cursor-grabbing'
+										: 'cursor-default',
 									isSelected ? 'opacity-100' : 'opacity-35',
 								].join(' ')}
 							>
 								{/* Card wrapper for image + meta */}
 								<div className="rounded-xl overflow-hidden border border-gray-200 bg-white">
 									<img
-										className="block w-full h-[360px] object-cover"
+										className={[
+											'block w-full object-cover',
+											preset.imgHeight,
+										].join(' ')}
 										src={photo.photo_source ?? ''}
 										alt={desc || `Photo ${i + 1}`}
 										loading="lazy"
@@ -130,18 +186,14 @@ const Gallery = ({ photos }: Props) => {
 
 									{
 										/* Meta section: render only if at least one field exists. */
-										(desc || author || date) && (
-											<div className="text-left pt-2.5 px-3 pb-3 ">
-												{desc && <div className="font-bold">{desc}</div>}
-												{(author || date) && (
-													<div className="text-gray-500 text-sm mt-0.5">
-														{author && <span>{author}</span>}
-														{author && date && <span> • </span>}
-														{date && <span>{date}</span>}
-													</div>
-												)}
+										<div className="text-left pt-2.5 px-3 pb-3 ">
+											<div className="font-bold">{desc || '\u00A0'}</div>
+											<div className="text-gray-500 text-sm mt-0.5">
+												<span>{author || (author && !date && '\u00A0')}</span>
+												{author && date && <span> • </span>}
+												<span>{date || '\u00A0'}</span>
 											</div>
-										)
+										</div>
 									}
 								</div>
 							</div>
@@ -152,7 +204,7 @@ const Gallery = ({ photos }: Props) => {
 
 			{
 				/* Controls row: shown only if there are multiple photos; includes prev/next buttons + numeric counter. */
-				photos.length > 1 && (
+				items.length > 1 && (
 					<div className="flex items-center justify-start gap-2.5 mt-2.5">
 						<button
 							type="button"
