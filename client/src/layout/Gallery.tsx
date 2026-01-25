@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import { formatDate } from '../utils/formatDate';
 import type { PhotoRow } from '../projects/ProjectDetailPage';
+import { formatDomain } from '../utils/formatDomain';
 
 /* Gallery size: sm (small), md (medium), lg (large). */
 type GallerySize = 'sm' | 'md' | 'lg';
@@ -42,7 +43,7 @@ const Gallery = ({
 	/* Filter only photos that have a valid photo_source (URL) and are not tied to a specific update (update_id must be null/undefined). This keeps the main gallery clean; update-specific photos are shown in update sections. */
 	const items = useMemo<PhotoRow[]>(() => {
 		const base: PhotoRow[] = (photos ?? []).filter(
-			photo => photo?.photo_source
+			photo => photo?.photo_source,
 		);
 
 		/* If variant is "all". */
@@ -56,7 +57,7 @@ const Gallery = ({
 
 		/* If variant is "structure" (default). */
 		return base.filter(
-			photo => photo.update_id === null || photo.update_id === undefined
+			photo => photo.update_id === null || photo.update_id === undefined,
 		);
 	}, [photos, variant, updateId]);
 
@@ -125,11 +126,11 @@ const Gallery = ({
 	/* Arrow handlers. Optional chaining prevents crash while emblaApi is not ready yet. */
 	const scrollPrev = useCallback<() => void>(
 		() => emblaApi?.scrollPrev(),
-		[emblaApi]
+		[emblaApi],
 	);
 	const scrollNext = useCallback<() => void>(
 		() => emblaApi?.scrollNext(),
-		[emblaApi]
+		[emblaApi],
 	);
 
 	/* If there are no eligible gallery items, render nothing. */
@@ -237,6 +238,17 @@ const Gallery = ({
 						<div className="font-semibold text-black">
 							{Math.min(selectedIndex + 1, snapCount || items.length)}/
 							{snapCount || items.length}
+						</div>
+
+						<div className="mr-0 m-auto">
+							<span className="font-semibold">Zdroj: </span>
+							<a
+								href={items[selectedIndex].photo_source as string}
+								target="_blank"
+								className="text-odb hover:text-olb"
+							>
+								{formatDomain(items[selectedIndex].photo_source)}
+							</a>
 						</div>
 					</div>
 				)

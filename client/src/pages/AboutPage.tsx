@@ -10,7 +10,7 @@ const AboutPage = () => {
 					width={'150px'}
 				/>
 				<h3 className="text-2xl font-bold mt-2">Filip Polzer</h3>
-				<p className="text-gray-600">Kartograf</p>
+				<p className="text-gray-600">Tvůrce</p>
 				<div className="flex gap-3 mt-2">
 					<span>
 						<a

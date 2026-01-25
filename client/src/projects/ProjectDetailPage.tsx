@@ -7,6 +7,7 @@ import Gallery from '../layout/Gallery';
 import Timeline from '../layout/Timeline';
 import UpdateListItem from '../projects/UpdateListItem';
 import { formatDate } from '../utils/formatDate';
+import { formatDomain } from '../utils/formatDomain';
 
 /* Generic API list response shape used by backend list endpoints. */
 type ListResponse<T> = {
@@ -100,7 +101,7 @@ type DetailData = {
 const fetchById = async <T,>(
 	baseUrl: string,
 	entityId: unknown,
-	controller: AbortController
+	controller: AbortController,
 ): Promise<T | null> => {
 	/* Validate the ID (some foreign keys are nullable). */
 	if (typeof entityId !== 'string' || !entityId.trim()) return null;
@@ -138,7 +139,7 @@ const ProjectDetailPage = () => {
 	/* Normalize the route param so we never send whitespace to the API. */
 	const safeId = useMemo<string>(
 		() => (typeof id === 'string' ? id.trim() : ''),
-		[id]
+		[id],
 	);
 
 	/* Load everything needed for this structure when the URL ID changes. */
@@ -161,7 +162,7 @@ const ProjectDetailPage = () => {
 				/* Load the main structure detail. */
 				const structure: StructureDetail = await fetchJson<StructureDetail>(
 					`${API.structures}${safeId}`,
-					controller.signal
+					controller.signal,
 				);
 
 				/* Load updates for this structure (newest first). */
@@ -196,12 +197,12 @@ const ProjectDetailPage = () => {
 						fetchById<EntityRow>(
 							API.investors,
 							structure.investor_id,
-							controller
+							controller,
 						),
 						fetchById<EntityRow>(
 							API.contractors,
 							structure.contractor_id,
-							controller
+							controller,
 						),
 						fetchById<EntityRow>(API.authors, structure.author_id, controller),
 						fetchById<WriterRow>(API.writers, structure.writer_id, controller),
@@ -223,7 +224,7 @@ const ProjectDetailPage = () => {
 				/* Ignore abort errors: these happen when safeId changes or component unmounts. */
 				if (!(error instanceof DOMException && error.name === 'AbortError')) {
 					setError(
-						error instanceof Error ? error.message : 'Failed to load project.'
+						error instanceof Error ? error.message : 'Failed to load project.',
 					);
 				}
 			} finally {
@@ -307,11 +308,11 @@ const ProjectDetailPage = () => {
 							)}
 						</div>
 						{/* Main info row: left = name and description, right = entities. */}
-						<div className="flex items-start flex-col sm:flex-row">
+						<div className="flex flex-col sm:flex-row">
 							{/* Left column: structure name and description. */}
 							<div
 								className={[
-									'pb-3 sm:pb-0 pr-2 border-odb',
+									'pb-3 sm:pb-0 pr-2 border-odb flex flex-col',
 									data.investor?.investor_id ||
 									data.contractor?.contractor_id ||
 									data.author?.author_id
@@ -325,6 +326,17 @@ const ProjectDetailPage = () => {
 								<p className="mt-4 leading-7 wrap-anywhere">
 									{data.structure?.description}
 								</p>
+								<div className="mb-0 ml-0 m-auto">
+									<span className="font-semibold">Zdroj: </span>
+									<a
+										href={data.source?.source_link}
+										target="_blank"
+										className="text-odb hover:text-olb"
+										title={data.source?.source_name}
+									>
+										{formatDomain(data.source?.source_link)}
+									</a>
+								</div>
 							</div>
 							{/* Right column: investor / contractor / author cards. */}
 							{(data.investor?.investor_id ||
@@ -361,7 +373,7 @@ const ProjectDetailPage = () => {
 													>
 														{truncateText(
 															(data.investor?.description as string) ?? '',
-															80
+															80,
 														)}
 													</p>
 												</div>
@@ -399,7 +411,7 @@ const ProjectDetailPage = () => {
 													>
 														{truncateText(
 															(data.contractor?.description as string) ?? '',
-															80
+															80,
 														)}
 													</p>
 												</div>
@@ -437,7 +449,7 @@ const ProjectDetailPage = () => {
 													>
 														{truncateText(
 															(data.author?.description as string) ?? '',
-															80
+															80,
 														)}
 													</p>
 												</div>
@@ -480,10 +492,10 @@ const ProjectDetailPage = () => {
 								''
 							) : (
 								<div className="mt-6 border-t border-gray-200 pt-6">
-									<div className="flex flex-col gap-6">
+									<div className="flex flex-col">
 										<h2 className="text-2xl font-semibold mb-4">Aktualizace</h2>
 										{(data.updates?.items ?? []).map(update => (
-											<div className="border-dotted border-b-2 border-gray-300 pb-6 last-of-type:border-0">
+											<div className="border-dotted border-b-2 border-gray-300 pb-6 last-of-type:border-0 mb-6">
 												<UpdateListItem
 													key={update.update_id}
 													update={update}

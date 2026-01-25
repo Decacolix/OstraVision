@@ -29,7 +29,7 @@ const HomePage = () => {
 
 	/* Holds names of structures to prevent repeated API calls for the same structure. */
 	const [structureNames, setStructureNames] = useState<Record<string, string>>(
-		{}
+		{},
 	);
 
 	/* Loading and error state for spinners and error messages. */
@@ -39,7 +39,7 @@ const HomePage = () => {
 	/* Extracts unique structure IDs from updates. */
 	const structureIds = useMemo<string[]>(() => {
 		return Array.from(
-			new Set(updates.map(update => update.structure_id).filter(Boolean))
+			new Set(updates.map(update => update.structure_id).filter(Boolean)),
 		);
 	}, [updates]);
 
@@ -73,7 +73,7 @@ const HomePage = () => {
 				/* Ignore abort errors, as these happen normally when we cancel request. */
 				if (!(error instanceof DOMException && error.name === 'AbortError')) {
 					setError(
-						error instanceof Error ? error.message : 'Failed to load updates.'
+						error instanceof Error ? error.message : 'Failed to load updates.',
 					);
 				}
 			} finally {
@@ -105,7 +105,7 @@ const HomePage = () => {
 						try {
 							const row: StructureRow = await fetchJson<StructureRow>(
 								`${API.structures}${id}`,
-								controller.signal
+								controller.signal,
 							);
 
 							/* Return a tuple of structure ID and its name. */
@@ -114,7 +114,7 @@ const HomePage = () => {
 							/* If fetching a single structure fails, fall back to an empty name. */
 							return [id, ''] as const;
 						}
-					})
+					}),
 				);
 
 				/* Merge newly fetched structure names into existing state. */
@@ -163,6 +163,13 @@ const HomePage = () => {
 						V tuto chvíli nespolupracujeme s žádnou organizací, firmou či
 						institucí a vše děláme na vlastní triko.
 					</p>
+				</div>
+				<div>
+					<h1 className="text-2xl font-bold">TODO LIST:</h1>
+					<p className="text-xl font-bold">- Zdroj přidat na detail stránku</p>
+					<p className="text-xl font-bold">- Pohrát si se zdrojem fotek</p>
+					<p className="text-xl font-bold">- Filtry na obvod</p>
+					<p className="text-xl font-bold">- Budget posuvník poměnit</p>
 				</div>
 			</div>
 			<h2 className="font-bold text-lg text-left mt-6 pb-3 text-olb">
