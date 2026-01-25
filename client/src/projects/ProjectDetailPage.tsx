@@ -326,7 +326,7 @@ const ProjectDetailPage = () => {
 								<p className="mt-4 leading-7 wrap-anywhere">
 									{data.structure?.description}
 								</p>
-								<div className="mb-0 ml-0 m-auto">
+								<div className="mb-0 ml-0 mt-4 m-auto">
 									<span className="font-semibold">Zdroj: </span>
 									<a
 										href={data.source?.source_link}
