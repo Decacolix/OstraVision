@@ -5,13 +5,10 @@ export const formatDomain = (url?: string | null): string => {
 	try {
 		const parsed = new URL(url);
 
-		/* Hostname without protocol, path, query. */
-		const hostname = parsed.hostname;
-
-		/* Capitalize first letter. */
-		return hostname.charAt(0).toUpperCase() + hostname.slice(1);
+		/* Return hostname without protocol, path, query, and "www". */
+		return parsed.hostname.replace(/^www\./i, '');
 	} catch {
-		/* If the URL is invalid. */
+		/* If the URL is invalid, return empty string. */
 		return '';
 	}
 };

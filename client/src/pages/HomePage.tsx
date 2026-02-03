@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import UpdateListItem, { type UpdateRow } from '../projects/UpdateListItem';
+import UpdateListItem from '../projects/UpdateListItem';
 import { API, fetchJson } from '../utils';
 import Loader from '../layout/Loader';
 import { useNavigate, type NavigateFunction } from 'react-router';
+import type { UpdateRow } from '../types/UpdateRow';
 
 /* Type representing a minimal structure record returned from the API. */
 type StructureRow = {
@@ -163,13 +164,6 @@ const HomePage = () => {
 						V tuto chvíli nespolupracujeme s žádnou organizací, firmou či
 						institucí a vše děláme na vlastní triko.
 					</p>
-				</div>
-				<div>
-					<h1 className="text-2xl font-bold">TODO LIST:</h1>
-					<p className="text-xl font-bold">- Zdroj přidat na detail stránku</p>
-					<p className="text-xl font-bold">- Pohrát si se zdrojem fotek</p>
-					<p className="text-xl font-bold">- Filtry na obvod</p>
-					<p className="text-xl font-bold">- Budget posuvník poměnit</p>
 				</div>
 			</div>
 			<h2 className="font-bold text-lg text-left mt-6 pb-3 text-olb">

@@ -1,4 +1,4 @@
-/* Component props: value (current search text), onChange (callback when the input value changes), disabled (if the element is disabled). */
+/* Component properties. */
 type Props = {
 	value: string;
 	onChange: (value: string) => void;

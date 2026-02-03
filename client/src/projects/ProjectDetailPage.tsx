@@ -8,6 +8,9 @@ import Timeline from '../layout/Timeline';
 import UpdateListItem from '../projects/UpdateListItem';
 import { formatDate } from '../utils/formatDate';
 import { formatDomain } from '../utils/formatDomain';
+import type { LocationRow } from '../types/LocationRow';
+import { formatLocation } from '../utils/formatLocation';
+import type { PhotoRow } from '../types/PhotoRow';
 
 /* Generic API list response shape used by backend list endpoints. */
 type ListResponse<T> = {
@@ -32,6 +35,7 @@ type StructureDetail = {
 	author_id?: string | null;
 	writer_id?: string | null;
 	source_id?: string | null;
+	location_id?: string | null;
 	[key: string]: unknown;
 };
 
@@ -41,18 +45,6 @@ type UpdateRow = {
 	structure_id: string;
 	update_date?: string;
 	update_text?: string;
-	[key: string]: unknown;
-};
-
-/* Photo record returned from /photos (filtered by structure_id). */
-export type PhotoRow = {
-	photo_id?: string;
-	structure_id?: string;
-	update_id?: string | null;
-	photo_source?: string | null;
-	photo_date?: string | null;
-	photo_description?: string | null;
-	photo_author?: string | null;
 	[key: string]: unknown;
 };
 
@@ -95,6 +87,7 @@ type DetailData = {
 	author: EntityRow | null;
 	writer: WriterRow | null;
 	source: SourceRow | null;
+	location: LocationRow | null;
 };
 
 /* Helper: fetch one entity by ID (or return null if ID is missing/invalid or the call fails). */
@@ -130,6 +123,7 @@ const ProjectDetailPage = () => {
 		author: null,
 		writer: null,
 		source: null,
+		location: null,
 	});
 
 	/* Loading and error state for spinners and error messages. */
@@ -192,7 +186,7 @@ const ProjectDetailPage = () => {
 				>(`${API.photos}?${photosParams.toString()}`, controller.signal);
 
 				/* Load related entities in parallel (nullable foreign keys). */
-				const [investor, contractor, author, writer, source] =
+				const [investor, contractor, author, writer, source, location] =
 					await Promise.all([
 						fetchById<EntityRow>(
 							API.investors,
@@ -207,6 +201,11 @@ const ProjectDetailPage = () => {
 						fetchById<EntityRow>(API.authors, structure.author_id, controller),
 						fetchById<WriterRow>(API.writers, structure.writer_id, controller),
 						fetchById<SourceRow>(API.sources, structure.source_id, controller),
+						fetchById<LocationRow>(
+							API.locations,
+							structure.location_id,
+							controller,
+						),
 					]);
 
 				/* Store everything together so render stays simple. */
@@ -219,6 +218,7 @@ const ProjectDetailPage = () => {
 					author,
 					writer,
 					source,
+					location,
 				});
 			} catch (error) {
 				/* Ignore abort errors: these happen when safeId changes or component unmounts. */
@@ -241,9 +241,9 @@ const ProjectDetailPage = () => {
 	}, [safeId]);
 
 	/* Compute the category label from structure.type (guards against missing/invalid values). */
-	const typeIndex =
+	const typeIndex: number =
 		typeof data.structure?.type === 'number' ? data.structure.type : -1;
-	const categoryLabel =
+	const categoryLabel: string =
 		typeIndex >= 0 && typeIndex < CATEGORIES.length
 			? CATEGORIES[typeIndex]
 			: '';
@@ -251,7 +251,7 @@ const ProjectDetailPage = () => {
 	/* Build a lookup map: update_id to array of photos belonging to that update. This lets each update render its own Gallery. */
 	const photosByUpdateId = useMemo<Record<string, PhotoRow[]>>(() => {
 		const map: Record<string, PhotoRow[]> = {};
-		const all = data.photos?.items ?? [];
+		const all: PhotoRow[] = data.photos?.items ?? [];
 
 		for (const photo of all) {
 			/* Skip photos without a URL (can't be displayed). */
@@ -266,6 +266,19 @@ const ProjectDetailPage = () => {
 
 		return map;
 	}, [data.photos?.items]);
+
+	/* Build a location label for the displayed structure. */
+	const locationLabel = useMemo<string>(() => {
+		return data.location ? formatLocation(data.location) : '';
+	}, [data.location]);
+
+	/* Build a location link to the Google Maps. */
+	const googleMapsHref = useMemo<string>(() => {
+		if (!locationLabel) return '';
+		return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+			locationLabel,
+		)}`;
+	}, [locationLabel]);
 
 	return (
 		<div className="w-full max-h-[750px] overflow-y-scroll text-left">
@@ -287,32 +300,71 @@ const ProjectDetailPage = () => {
 				/* Main content (only when not loading and no error). */
 				!error && !loading && (
 					<div className=" w-full px-4">
-						{/* Category and budget labels. */}
+						<div className="flex">
+							{
+								/* Location label. */
+								locationLabel && googleMapsHref && (
+									<div>
+										<a
+											href={googleMapsHref}
+											target="_blank"
+											rel="noreferrer noopener"
+											className="my-3 flex items-center text-odb hover:text-olb wrap-anywhere group"
+											title="Otevřít v Google Maps"
+										>
+											{/* Default icon */}
+											<img
+												src="/src/assets/icons/location-icon-odb.svg"
+												alt="location"
+												className="mr-2 block group-hover:hidden"
+												width={15}
+											/>
+
+											{/* Hover icon */}
+											<img
+												src="/src/assets/icons/location-icon-olb.svg"
+												alt="location"
+												className="mr-2 hidden group-hover:block"
+												width={15}
+											/>
+											{locationLabel}
+										</a>
+									</div>
+								)
+							}
+						</div>
 						<div className="flex justify-between gap-4 mb-6">
-							{categoryLabel && (
-								<div
-									className="rounded-lg text-center w-1/2 bg-odb text-white text-lg py-1 font-medium"
-									title="Kategorie"
-								>
-									{CATEGORIES[data.structure?.type as number]?.toUpperCase() ??
-										''}
-								</div>
-							)}
-							{data.structure?.budget && (
-								<div
-									className="rounded-lg text-center w-1/2 bg-olb text-white text-lg py-1 font-medium"
-									title="Rozpočet"
-								>
-									{formatCzk(data.structure?.budget as number) ?? ''}
-								</div>
-							)}
+							{
+								/* Category label. */
+								categoryLabel && (
+									<div
+										className="rounded-lg text-center w-1/2 bg-odb text-white text-lg py-1 font-medium"
+										title="Kategorie"
+									>
+										{CATEGORIES[
+											data.structure?.type as number
+										]?.toUpperCase() ?? ''}
+									</div>
+								)
+							}
+							{
+								/* Budget label. */
+								data.structure?.budget && (
+									<div
+										className="rounded-lg text-center w-1/2 bg-olb text-white text-lg py-1 font-medium"
+										title="Rozpočet"
+									>
+										{formatCzk(data.structure?.budget as number) ?? ''}
+									</div>
+								)
+							}
 						</div>
 						{/* Main info row: left = name and description, right = entities. */}
 						<div className="flex flex-col sm:flex-row">
 							{/* Left column: structure name and description. */}
 							<div
 								className={[
-									'pb-3 sm:pb-0 pr-2 border-odb flex flex-col',
+									'pb-3 sm:pb-0 pr-2 border-odb flex flex-col justify-between',
 									data.investor?.investor_id ||
 									data.contractor?.contractor_id ||
 									data.author?.author_id
@@ -320,13 +372,16 @@ const ProjectDetailPage = () => {
 										: 'w-full border-0',
 								].join(' ')}
 							>
-								<h1 className="text-2xl font-bold wrap-anywhere">
-									{data.structure?.name}
-								</h1>
-								<p className="mt-4 leading-7 wrap-anywhere">
-									{data.structure?.description}
-								</p>
-								<div className="mb-0 ml-0 mt-4 m-auto">
+								<div>
+									<h1 className="text-2xl font-bold wrap-anywhere">
+										{data.structure?.name}
+									</h1>
+
+									<p className="mt-4 leading-7 wrap-anywhere">
+										{data.structure?.description}
+									</p>
+								</div>
+								<div className="mt-4">
 									<span className="font-semibold">Zdroj: </span>
 									<a
 										href={data.source?.source_link}
@@ -495,9 +550,11 @@ const ProjectDetailPage = () => {
 									<div className="flex flex-col">
 										<h2 className="text-2xl font-semibold mb-4">Aktualizace</h2>
 										{(data.updates?.items ?? []).map(update => (
-											<div className="border-dotted border-b-2 border-gray-300 pb-6 last-of-type:border-0 mb-6">
+											<div
+												key={update.update_id}
+												className="border-dotted border-b-2 border-gray-300 pb-6 last-of-type:border-0 mb-6"
+											>
 												<UpdateListItem
-													key={update.update_id}
 													update={update}
 													title={
 														formatDate(update.update_date ?? '') ||

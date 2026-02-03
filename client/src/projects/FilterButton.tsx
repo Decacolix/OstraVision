@@ -1,6 +1,6 @@
 import FilterResetButton from './FilterResetButton';
 
-/* Component props: hasActiveFilters (check if there are any active filters), onToggle (function when the button is active/inactive), onReset (function when the filters are reseted), disabled (if the element is disabled). */
+/* Component properties. */
 type Props = {
 	hasActiveFilters: boolean;
 	onToggle: () => void;

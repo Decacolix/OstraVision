@@ -1,15 +1,11 @@
 import { useMemo, useState } from 'react';
-
-/* Sort type selection: alphabetical – by project name, time – by last update. */
-export type SortType = 'alphabetical' | 'time';
-
-/* Sort direction selection: ascending (asc) – A → Z / oldest → newest, descending (desc) – Z → A / newest → oldest. */
-export type SortDirection = 'asc' | 'desc';
+import type { SortType } from '../types/SortType';
+import type { SortDirection } from '../types/SortDirection';
 
 /* UI state for hover tracks which icon is currently hovered, null means nothing is hovered. */
 type HoverKey = 'alphabetical' | 'time' | 'asc' | 'desc' | null;
 
-/* Component props: sortType / sortDirection are the currently active settings, onChangeSortType / onChangeSortDirection are callbacks to update the parent state. */
+/* Component properties. */
 type Props = {
 	sortType: SortType;
 	sortDirection: SortDirection;

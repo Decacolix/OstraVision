@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-/* Component props: timeline (timeline string, format: year:event;year:event;year:event; ...). */
+/* Component properties. */
 type Props = {
 	timeline?: string | null;
 };

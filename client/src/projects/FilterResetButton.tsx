@@ -1,4 +1,4 @@
-/* Component props: onClick (function on click), title (title shown when hovered), disabled (if the element is disabled). */
+/* Component properties. */
 type Props = {
 	onClick: () => void;
 	title?: string;

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import { formatDate } from '../utils/formatDate';
-import type { PhotoRow } from '../projects/ProjectDetailPage';
 import { formatDomain } from '../utils/formatDomain';
+import type { PhotoRow } from '../types/PhotoRow';
 
 /* Gallery size: sm (small), md (medium), lg (large). */
 type GallerySize = 'sm' | 'md' | 'lg';
@@ -10,7 +10,7 @@ type GallerySize = 'sm' | 'md' | 'lg';
 /* Gallery content variant: structure (only photos where update_id is null/undefined, default), update (only photos where update_id === updateId), all (photos with photo source, no filtering by update_id). */
 type GalleryVariant = 'structure' | 'update' | 'all';
 
-/* Component props: photos (array of photos loaded for the project detail page). */
+/* Component properties. */
 type Props = {
 	photos: PhotoRow[];
 	size?: GallerySize;
@@ -205,9 +205,10 @@ const Gallery = ({
 
 			{
 				/* Controls row: shown only if there are multiple photos; includes prev/next buttons + numeric counter. */
-				items.length > 1 && (
-					<div className="flex items-center justify-start mt-2.5">
-						<div className="flex flex-col gap-2 sm:gap-0 sm:flex-row justify-between items-start sm:items-center w-full">
+
+				<div className="flex items-center justify-start mt-2.5">
+					<div className="flex flex-col gap-2 sm:gap-0 sm:flex-row justify-between items-start sm:items-center w-full">
+						{items.length > 1 && (
 							<div className="flex gap-2.5 items-center">
 								<button
 									type="button"
@@ -242,22 +243,21 @@ const Gallery = ({
 									{snapCount || items.length}
 								</div>
 							</div>
-							<div>
-								{' '}
-								<div className="mr-0 m-auto">
-									<span className="font-semibold">Zdroj: </span>
-									<a
-										href={items[selectedIndex].photo_source as string}
-										target="_blank"
-										className="text-odb hover:text-olb"
-									>
-										{formatDomain(items[selectedIndex].photo_source)}
-									</a>
-								</div>
+						)}
+						<div>
+							<div className="mr-0 m-auto">
+								<span className="font-semibold">Zdroj: </span>
+								<a
+									href={items[selectedIndex].photo_source as string}
+									target="_blank"
+									className="text-odb hover:text-olb"
+								>
+									{formatDomain(items[selectedIndex].photo_source)}
+								</a>
 							</div>
 						</div>
 					</div>
-				)
+				</div>
 			}
 		</div>
 	);

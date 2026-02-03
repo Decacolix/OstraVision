@@ -1,5 +1,6 @@
 /* Base URLs for backend endpoints. */
 export const API: {
+	locations: string;
 	structures: string;
 	photos: string;
 	updates: string;
@@ -17,6 +18,7 @@ export const API: {
 	authors: 'http://localhost:3000/api/data/authors/',
 	writers: 'http://localhost:3000/api/data/writers/',
 	sources: 'http://localhost:3000/api/data/sources/',
+	locations: 'http://localhost:3000/api/data/locations/',
 };
 
 /* List of categories. */

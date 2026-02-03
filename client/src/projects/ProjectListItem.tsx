@@ -1,23 +1,14 @@
+import type { Structure } from '../types/Structure';
 import { truncateText, formatDaysAgo, CATEGORIES } from '../utils';
 import { formatCzk } from '../utils/formatCzk';
 import { formatDate } from '../utils/formatDate';
 
-/* Exported type representing one project record from the API. */
-export type Structure = {
-	structure_id: string;
-	name?: string;
-	description?: string;
-	type?: number;
-	budget?: number;
-	updated_at?: string;
-	[key: string]: unknown;
-};
-
-/* Component props: structure (the project record from the database), photoUrl (cover image), lastUpdatedLabel (ISO date string), onClick (click handler for opening the project detail). */
+/* Component properties. */
 type Props = {
 	structure: Structure;
 	photoUrl?: string | null;
 	lastUpdatedLabel: string;
+	locationLabel?: string | null;
 	onClick?: () => void;
 };
 
@@ -26,6 +17,7 @@ const ProjectListItem = ({
 	structure,
 	photoUrl,
 	lastUpdatedLabel,
+	locationLabel,
 	onClick,
 }: Props) => {
 	/* Project title, truncated for UI consistency. */
@@ -52,7 +44,7 @@ const ProjectListItem = ({
 
 	return (
 		<button type="button" className="min-w-full">
-			<div className="h-35 text-white my-5">
+			<div className="h-35 text-white my-5 select-text">
 				<div
 					className="overflow-hidden flex bg-gray-400 h-30 justify-end rounded-lg cursor-pointer hover:underline"
 					style={{
@@ -68,6 +60,14 @@ const ProjectListItem = ({
 						<p className="text-xs sm:text-sm">{shortDescription}</p>
 					</div>
 				</div>
+				{
+					/* Location row. */
+					locationLabel ? (
+						<div className="py-2 text-xs sm:text-sm text-gray-500 text-center wrap-anywhere border-b border-gray-400">
+							{locationLabel}
+						</div>
+					) : null
+				}
 				<div className="pt-2 text-xs sm:text-sm flex flex-col sm:flex-row justify-between">
 					<div className="flex justify-center sm:justify-start">
 						{

@@ -1,13 +1,22 @@
 import { useEffect, useMemo } from 'react';
 import { CATEGORIES } from '../utils/constants';
-import { formatCzk } from '../utils/formatCzk';
 import { clamp } from '../utils/clamp';
 
-/* Component props: isOpen (check if filters are open), selectedCategories (selected labels), onToggleCategory (when category is active/inactive), minBudget (minimum budget), maxBudget (maximum budget), absoluteMaxBudget (absolute maximum budget), onChangeMinBudget (function when minimum budget changes), onChangeMaxBudget (function when maximum budget changes). */
+/* Type for filtering by locaiton. */
+type LocationFilterOption = {
+	key: string;
+	label: string;
+	kind: 'district' | 'city';
+};
+
+/* Component properties. */
 type Props = {
 	isOpen: boolean;
 	selectedCategories: number[];
 	onToggleCategory: (categoryIndex: number) => void;
+	locationOptions: LocationFilterOption[];
+	selectedLocations: string[];
+	onToggleLocation: (key: string) => void;
 	minBudget: number;
 	maxBudget: number;
 	absoluteMaxBudget: number;
@@ -19,6 +28,9 @@ type Props = {
 const FilterCard = ({
 	isOpen,
 	selectedCategories,
+	locationOptions,
+	selectedLocations,
+	onToggleLocation,
 	onToggleCategory,
 	minBudget,
 	maxBudget,
@@ -29,13 +41,19 @@ const FilterCard = ({
 	/* Convert the selected category indices to a Set for quick lookups. */
 	const selectedSet = useMemo<Set<number>>(
 		() => new Set(selectedCategories),
-		[selectedCategories]
+		[selectedCategories],
 	);
 
 	/* Ensure the "absolute max" is never negative. Useful when there are no items yet. */
 	const safeMax = useMemo<number>(
 		() => Math.max(0, absoluteMaxBudget),
-		[absoluteMaxBudget]
+		[absoluteMaxBudget],
+	);
+
+	/* Set the selected location labels. */
+	const selectedLocationsSet = useMemo<Set<string>>(
+		() => new Set(selectedLocations),
+		[selectedLocations],
 	);
 
 	/* Slider step is dynamic: at least 1000, otherwise ~1 % of the current maximum. */
@@ -85,7 +103,7 @@ const FilterCard = ({
 			].join(' ')}
 		>
 			{/* Category multi-select. Each category toggles on/off independently. */}
-			<div className="flex flex-wrap gap-2">
+			<div className="flex flex-wrap gap-2 border-b border-gray-300 pb-3">
 				{CATEGORIES.map((label, idx) => {
 					const isSelected: boolean = selectedSet.has(idx);
 					return (
@@ -107,12 +125,70 @@ const FilterCard = ({
 				})}
 			</div>
 
+			{/* Location multi-select (district/city). */}
+			{locationOptions.length > 0 && (
+				<div className="mt-3 pb-3 flex flex-wrap gap-2 border-b border-gray-300">
+					{locationOptions.map(opt => {
+						const isSelected: boolean = selectedLocationsSet.has(opt.key);
+
+						return (
+							<button
+								type="button"
+								key={opt.key}
+								onClick={() => onToggleLocation(opt.key)}
+								className={[
+									'px-3 py-1 text-sm font-semibold cursor-pointer border', // similar sizing
+									'rounded-none', // NOT rounded/pill (as requested)
+									isSelected
+										? 'bg-odb text-white border-odb hover:bg-olb hover:border-olb'
+										: 'bg-white text-gray-500 border-gray-300 hover:bg-olb hover:border-olb hover:text-white',
+								].join(' ')}
+								title={opt.kind === 'district' ? 'Městský obvod' : 'Město'}
+							>
+								{opt.label}
+							</button>
+						);
+					})}
+				</div>
+			)}
+
 			{/* Budget range filter, two-thumb range slider + min/max number inputs. */}
 			<div className="mt-5">
-				<div className="flex items-center justify-between text-sm text-gray-600">
-					<div>Rozpočet</div>
-					<div className="font-semibold text-gray-700">
-						{formatCzk(minBudget)} &ndash; {formatCzk(maxBudget)}
+				<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-sm text-gray-600">
+					<div>Rozpočet:</div>
+					{/* Numeric inputs linked to the same min/max state as the sliders. */}
+					<div className="flex flex-col sm:flex-row items-center mt-2 sm:mt-0">
+						<div className="flex items-center">
+							<div>
+								<input
+									type="number"
+									inputMode="numeric"
+									min={0}
+									max={maxBudget}
+									value={minBudget}
+									onChange={e => handleMin(e.target.value)}
+									className="border border-gray-300 rounded-md px-3 py-2 w-[140px]"
+								/>
+							</div>
+							<div className="ml-2 font-bold">Kč</div>
+						</div>
+						<div className="mx-4 font-bold self-start sm:self-auto">
+							&mdash;
+						</div>
+						<div className="flex items-center">
+							<div>
+								<input
+									type="number"
+									inputMode="numeric"
+									min={minBudget}
+									max={safeMax}
+									value={maxBudget}
+									onChange={e => handleMax(e.target.value)}
+									className="border border-gray-300 rounded-md px-3 py-2 w-[140px]"
+								/>
+							</div>
+							<div className="ml-2 font-bold">Kč</div>
+						</div>
 					</div>
 				</div>
 
@@ -151,34 +227,6 @@ const FilterCard = ({
 						onChange={e => handleMax(e.target.value)}
 						className="filter-range absolute left-0 right-0 top-1/2 -translate-y-1/2 w-full z-30"
 					/>
-				</div>
-
-				{/* Numeric inputs linked to the same min/max state as the sliders. */}
-				<div className="mt-3 grid grid-cols-2 gap-3">
-					<div className="flex flex-col">
-						<label className="text-xs text-gray-500 mb-1">Min</label>
-						<input
-							type="number"
-							inputMode="numeric"
-							min={0}
-							max={maxBudget}
-							value={minBudget}
-							onChange={e => handleMin(e.target.value)}
-							className="border border-gray-300 rounded-md px-3 py-2"
-						/>
-					</div>
-					<div className="flex flex-col">
-						<label className="text-xs text-gray-500 mb-1">Max</label>
-						<input
-							type="number"
-							inputMode="numeric"
-							min={minBudget}
-							max={safeMax}
-							value={maxBudget}
-							onChange={e => handleMax(e.target.value)}
-							className="border border-gray-300 rounded-md px-3 py-2"
-						/>
-					</div>
 				</div>
 			</div>
 		</div>
