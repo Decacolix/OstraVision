@@ -6,5 +6,7 @@ export type LocationRow = {
 	postal_code?: string | null;
 	city?: string | null;
 	urban_district?: string | null;
+	latitude?: number | string | null;
+	longitude?: number | string | null;
 	[key: string]: unknown;
 };

@@ -1,3 +1,5 @@
+import type { NavItem } from '../types/NavItem';
+
 /* Base URLs for backend endpoints. */
 export const API: {
 	locations: string;
@@ -33,4 +35,26 @@ export const CATEGORIES: string[] = [
 	'Kultura', // 7
 	'Kanceláře', // 8
 	'Průmysl', // 9
+];
+
+/* Base styles for navigation link. */
+export const NAV_LINK_BASE: string =
+	'navlink cursor-pointer wrap text-center text-sm sm:text-base mt-12 px-2 md:px-4 lg:mt-0';
+
+/* Styles for active navigation link. */
+export const NAV_LINK_ACTIVE: string = 'text-odb';
+
+/* Styles for inactive navigation link. */
+export const NAV_LINK_INACTIVE: string = 'text-olb';
+
+/* List of items in the navigation. */
+export const NAV_ITEMS: NavItem[] = [
+	{ to: '/projekty', label: 'PROJEKTY' },
+	{ to: '/kultura-gastro', label: 'KULTURA & GASTRO' },
+	{ to: '/o-nas', label: 'O NÁS' },
+];
+
+/* Default map center (Ostrava area). */
+export const DEFAULT_CENTER: [number, number] = [
+	49.81637370301487, 18.227087042101008,
 ];

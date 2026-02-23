@@ -1,11 +1,11 @@
-import type { Structure } from '../types/Structure';
+import type { StructureRow } from '../types/StructureRow';
 import { truncateText, formatDaysAgo, CATEGORIES } from '../utils';
 import { formatCzk } from '../utils/formatCzk';
 import { formatDate } from '../utils/formatDate';
 
 /* Component properties. */
 type Props = {
-	structure: Structure;
+	structure: StructureRow;
 	photoUrl?: string | null;
 	lastUpdatedLabel: string;
 	locationLabel?: string | null;

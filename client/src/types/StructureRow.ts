@@ -1,5 +1,5 @@
 /* Exported type representing one project record from the API. */
-export type Structure = {
+export type StructureRow = {
 	structure_id: string;
 	name?: string;
 	description?: string;

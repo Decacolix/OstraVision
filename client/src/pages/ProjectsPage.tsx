@@ -11,7 +11,7 @@ import { formatLocation } from '../utils/formatLocation';
 import type { LocationRow } from '../types/LocationRow';
 import type { SortType } from '../types/SortType';
 import type { SortDirection } from '../types/SortDirection';
-import type { Structure } from '../types/Structure';
+import type { StructureRow } from '../types/StructureRow';
 
 /* Represents one row returned from the photo endpoint. */
 type PhotoRow = {
@@ -55,7 +55,7 @@ const ProjectsPage = () => {
 	const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
 	/* Loaded structures. */
-	const [structures, setStructures] = useState<Structure[]>([]);
+	const [structures, setStructures] = useState<StructureRow[]>([]);
 
 	/* Location label for a structure. */
 	const [locationLabelById, setLocationLabelById] = useState<
@@ -117,7 +117,7 @@ const ProjectsPage = () => {
 
 	/* Fetch and cache location labels for a batch of structures. Each structure can reference a location via location_id. The function resolves unique location IDs, fetches their data and formats a label. */
 	const loadLocationsForStructures = async (
-		items: Structure[],
+		items: StructureRow[],
 		signal: AbortSignal,
 	): Promise<void> => {
 		/* If there are no items, abort the function. */
@@ -178,7 +178,7 @@ const ProjectsPage = () => {
 
 	/* Fetch and cache cover photos for a batch of structures. For each structure, we query photos filtered by structure_id and we pick the first photo where update_id is null or undefined, to avoid using photos for updates. */
 	const loadPhotosForStructures = async (
-		items: Structure[],
+		items: StructureRow[],
 		signal: AbortSignal,
 	): Promise<void> => {
 		/* If there are no items, abort the function. */
@@ -255,8 +255,8 @@ const ProjectsPage = () => {
 				});
 
 				/* Fetch the structure page from the API. */
-				const res: ListResponse<Structure> = await fetchJson<
-					ListResponse<Structure>
+				const res: ListResponse<StructureRow> = await fetchJson<
+					ListResponse<StructureRow>
 				>(`${API.structures}?${params.toString()}`, controller.signal);
 
 				/* Store total count for pagination logic. */
@@ -264,9 +264,9 @@ const ProjectsPage = () => {
 
 				/* Update list: if nextOffset is 0, replace the list (fresh load), otherwise append. De-duplicate by structure_id to avoid duplicate keys. */
 				setStructures(prev => {
-					const merged: Structure[] =
+					const merged: StructureRow[] =
 						nextOffset === 0 ? res.items : [...prev, ...res.items];
-					const byId: Map<string, Structure> = new Map(
+					const byId: Map<string, StructureRow> = new Map(
 						merged.map(structure => [structure.structure_id, structure]),
 					);
 					return Array.from(byId.values());
@@ -488,7 +488,7 @@ const ProjectsPage = () => {
 	}, []);
 
 	/* Apply filters to the already-loaded structures, client-side filtering, no extra API calls. */
-	const filteredStructures = useMemo<Structure[]>(() => {
+	const filteredStructures = useMemo<StructureRow[]>(() => {
 		const categorySet: Set<number> = new Set(selectedCategories);
 		const selectedLocationSet: Set<string> = new Set(selectedLocations);
 		const query: string = searchText.trim().toLowerCase();
@@ -555,7 +555,7 @@ const ProjectsPage = () => {
 	const navigate: NavigateFunction = useNavigate();
 
 	return (
-		<div className="w-full max-h-[750px] overflow-y-scroll ">
+		<div className="w-full max-h-[750px] overflow-y-scroll">
 			{
 				/* Sort bar is hidden when there is an error. */
 				!error && (

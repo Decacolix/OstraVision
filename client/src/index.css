@@ -4,6 +4,11 @@
 /* Enable Tailwind and allow usage of @theme variables in the build pipeline. */
 @import 'tailwindcss';
 
+/* Import Leaflet styles for the map. */
+@import 'leaflet/dist/leaflet.css';
+@import 'leaflet.markercluster/dist/MarkerCluster.css';
+@import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+
 /* Tailwind theme variables, usable via Tailwind classes like bg-odb, text-olb. */
 @theme {
 	--font-montserrat: 'Montserrat', sans-serif;
@@ -159,4 +164,46 @@ body {
 }
 .filter-range::-moz-range-track {
 	background: transparent;
+}
+
+/* Leaflet marker cluster styling – outer bubble. */
+.marker-cluster {
+	background-color: var(--color-olb) !important;
+}
+
+/* Leaflet marker cluster styling – inner bubble + text styling. */
+.marker-cluster div {
+	background-color: var(--color-odb) !important;
+	color: #fff !important;
+	font-family: var(--font-montserrat) !important;
+	font-weight: 700;
+}
+
+/* Leaflet marker cluster styling – apply to all cluster sizes (plugin uses these classes) */
+.marker-cluster-small,
+.marker-cluster-medium,
+.marker-cluster-large {
+	background-color: var(--color-olb) !important;
+}
+
+/* Leaflet marker cluster styling – divs. */
+.marker-cluster-small div,
+.marker-cluster-medium div,
+.marker-cluster-large div {
+	background-color: var(--color-odb) !important;
+	color: #fff !important;
+	font-family: var(--font-montserrat) !important;
+}
+
+.leaflet-popup-content {
+	font-family: var(--font-montserrat) !important;
+}
+
+.leaflet-popup-content a {
+	color: var(--color-odb) !important;
+	text-decoration: none;
+}
+
+.leaflet-popup-content a:hover {
+	color: var(--color-olb) !important;
 }
